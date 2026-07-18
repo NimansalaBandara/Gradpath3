@@ -5,6 +5,12 @@ then returns the top 5 with a human-readable reason.
 """
 
 
+# Generic academic suffix words that appear across many unrelated fields
+# (e.g. "Computer Science", "Data Science" and "Environmental Science" all
+# share "science") — matching on these alone produces false-positive matches.
+GENERIC_FIELD_WORDS = {'science', 'sciences', 'studies'}
+
+
 def compute_recommendations(user, courses):
     profile = getattr(user, 'student_profile', None)
 
@@ -12,8 +18,8 @@ def compute_recommendations(user, courses):
     level = (profile.target_level or '') if profile else ''
     gpa   = float(profile.gpa) if (profile and profile.gpa) else 0.0
 
-    # Meaningful words from the student's field (skip short stop-words)
-    field_words = [w for w in field.split() if len(w) > 3]
+    # Meaningful words from the student's field (skip short/generic stop-words)
+    field_words = [w for w in field.split() if len(w) > 3 and w not in GENERIC_FIELD_WORDS]
 
     scored = []
     for course in courses:

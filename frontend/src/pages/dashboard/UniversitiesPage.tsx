@@ -20,33 +20,20 @@ const CITY_OPTIONS = [
   { label: 'Adelaide', value: 'Adelaide' },
 ];
 
-const SUBJECT_OPTIONS = [
-  { label: 'All Subjects', value: '' },
-  { label: 'Computer Science & IT', value: 'computer-science-it' },
-  { label: 'Engineering', value: 'engineering' },
-  { label: 'Business & Finance', value: 'business-finance' },
-  { label: 'Science', value: 'science' },
-  { label: 'Medicine & Health', value: 'medicine-health' },
-  { label: 'Humanities & Social Sciences', value: 'humanities-social-sciences' },
-];
-
 export default function UniversitiesPage() {
   const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [city, setCity] = useState('');
-  const [subject, setSubject] = useState('');
   const [page, setPage] = useState(1);
 
   const handleSearch = useCallback((v: string) => { setSearch(v); setPage(1); }, []);
   const handleCity = useCallback((v: string) => { setCity(v); setPage(1); }, []);
-  const handleSubject = useCallback((v: string) => { setSubject(v); setPage(1); }, []);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['universities', search, city, subject, page],
+    queryKey: ['universities', search, city, page],
     queryFn: () => catalogApi.universities({
       search: search || undefined,
       city: city || undefined,
-      subject: subject || undefined,
       page,
     }),
   });
@@ -147,8 +134,7 @@ export default function UniversitiesPage() {
       <div className="flex flex-col sm:flex-row gap-3 mb-5">
         <SearchBar value={search} onChange={handleSearch} placeholder="Search universities…" className="flex-1" />
       </div>
-      <FilterChips options={CITY_OPTIONS} value={city} onChange={handleCity} className="mb-3" />
-      <FilterChips options={SUBJECT_OPTIONS} value={subject} onChange={handleSubject} className="mb-6" />
+      <FilterChips options={CITY_OPTIONS} value={city} onChange={handleCity} className="mb-6" />
 
       {isLoading && (
         <div className="flex justify-center py-20">

@@ -13,10 +13,21 @@ const LEVEL_OPTIONS = [
   { label: 'PhD', value: 'phd' },
 ];
 
+const SUBJECT_OPTIONS = [
+  { label: 'All Areas', value: '' },
+  { label: 'Computer Science & IT', value: 'computer-science-it' },
+  { label: 'Engineering', value: 'engineering' },
+  { label: 'Business & Finance', value: 'business-finance' },
+  { label: 'Science', value: 'science' },
+  { label: 'Medicine & Health', value: 'medicine-health' },
+  { label: 'Humanities & Social Sciences', value: 'humanities-social-sciences' },
+];
+
 export default function UniversityDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [level, setLevel] = useState('');
+  const [subject, setSubject] = useState('');
   const [search, setSearch] = useState('');
 
   const handleSearch = useCallback((v: string) => setSearch(v), []);
@@ -28,10 +39,11 @@ export default function UniversityDetailPage() {
   });
 
   const { data: coursesData, isLoading: coursesLoading } = useQuery({
-    queryKey: ['courses', id, level, search],
+    queryKey: ['courses', id, level, subject, search],
     queryFn: () => catalogApi.courses({
       university: Number(id),
       level: level || undefined,
+      subject: subject || undefined,
       search: search || undefined,
     }),
     enabled: !!id,
@@ -94,7 +106,8 @@ export default function UniversityDetailPage() {
         <h2 className="text-lg font-semibold text-brand-text">Courses</h2>
         <SearchBar value={search} onChange={handleSearch} placeholder="Search courses…" className="sm:w-64" />
       </div>
-      <FilterChips options={LEVEL_OPTIONS} value={level} onChange={setLevel} className="mb-5" />
+      <FilterChips options={LEVEL_OPTIONS} value={level} onChange={setLevel} className="mb-3" />
+      <FilterChips options={SUBJECT_OPTIONS} value={subject} onChange={setSubject} className="mb-5" />
 
       {coursesLoading && (
         <div className="flex justify-center py-16">

@@ -4,7 +4,6 @@ import type { University, Course, Scholarship, PaginatedResponse } from '../type
 export interface UniversityParams {
   search?: string;
   city?: string;
-  subject?: string;
   ranking_min?: number;
   ranking_max?: number;
   page?: number;
@@ -14,6 +13,7 @@ export interface CourseParams {
   university?: number;
   level?: string;
   field?: string;
+  subject?: string;
   search?: string;
   page?: number;
 }

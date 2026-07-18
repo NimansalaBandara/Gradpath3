@@ -18,3 +18,7 @@ frontend/dist/
 .DS_Store
 Thumbs.db
 *.log
+
+# Local project instructions (not for the public repo)
+claude.MD
+CLAUDE.md

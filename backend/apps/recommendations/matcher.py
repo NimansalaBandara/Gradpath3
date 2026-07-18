@@ -23,17 +23,20 @@ def compute_recommendations(user, courses):
 
     scored = []
     for course in courses:
-        score = 0
-
-        # Level match is the strongest signal
-        if level and course.level == level:
-            score += 40
-
-        # Field keyword overlap
+        level_match = bool(level and course.level == level)
         course_field = course.field.lower()
-        for word in field_words:
-            if word in course_field:
-                score += 25
+        field_match = any(word in course_field for word in field_words)
+
+        # GPA alone isn't relevance — a course must actually match the
+        # student's target level or field of study to be recommended.
+        if not level_match and not field_match:
+            continue
+
+        score = 0
+        if level_match:
+            score += 40
+        if field_match:
+            score += 25
 
         # GPA tiers (higher GPA → more courses are "reachable")
         if gpa >= 3.8:
@@ -41,8 +44,7 @@ def compute_recommendations(user, courses):
         elif gpa >= 3.5:
             score += 5
 
-        if score > 0:
-            scored.append((course, min(score, 95)))
+        scored.append((course, min(score, 95)))
 
     # Sort descending, take top 5
     scored.sort(key=lambda x: -x[1])

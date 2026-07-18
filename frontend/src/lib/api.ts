@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import type { User, RegisterResponse, LoginResponse, StudentProfile, ApplicationTracker, TrackerStatus, DocumentItem, SubscriptionStatus, AIRecommendation } from '../types/api';
+import type { User, RegisterResponse, LoginResponse, StudentProfile, ApplicationTracker, TrackerStatus, DocumentItem, SubscriptionStatus, AIRecommendation, AIScholarshipRecommendation } from '../types/api';
 
 const api = axios.create({
   baseURL: '/api',
@@ -85,6 +85,10 @@ export const billingApi = {
 
 export const recommendationsApi = {
   get: () => api.get<AIRecommendation[]>('/recommendations/').then((r) => r.data),
+};
+
+export const scholarshipRecommendationsApi = {
+  get: () => api.get<AIScholarshipRecommendation[]>('/recommendations/scholarships/').then((r) => r.data),
 };
 
 export default api;

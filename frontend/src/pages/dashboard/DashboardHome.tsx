@@ -11,8 +11,9 @@ import {
   LockClosedIcon,
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../../context/AuthContext';
-import { trackerApi, documentsApi, recommendationsApi } from '../../lib/api';
+import { trackerApi, documentsApi, recommendationsApi, scholarshipRecommendationsApi } from '../../lib/api';
 import type { AIRecommendation } from '../../types/api';
+import ScholarshipRecommendationCard from '../../components/ScholarshipRecommendationCard';
 
 // ── AI recommendation card ──────────────────────────────────────────────────
 function RecommendationCard({ rec }: { rec: AIRecommendation }) {
@@ -103,6 +104,17 @@ export default function DashboardHome() {
     queryFn: recommendationsApi.get,
     enabled: !!user?.is_premium,
     staleTime: 1000 * 60 * 60, // 1 hour client-side stale
+  });
+
+  const {
+    data: scholarshipRecs,
+    isLoading: scholarshipRecsLoading,
+    isError: scholarshipRecsError,
+  } = useQuery({
+    queryKey: ['scholarship-recommendations'],
+    queryFn: scholarshipRecommendationsApi.get,
+    enabled: !!user?.is_premium,
+    staleTime: 1000 * 60 * 60,
   });
 
   const completeDocs = documents?.filter((d) => d.status === 'complete').length ?? 0;
@@ -220,7 +232,52 @@ export default function DashboardHome() {
             </div>
           )}
         </div>
-      ) : (
+      ) : null}
+
+      {/* AI-Recommended Scholarships (premium) */}
+      {user?.is_premium && (
+        <div className="mb-8">
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className="p-1.5 bg-amber-100 rounded-lg">
+              <SparklesIcon className="h-4 w-4 text-amber-500" />
+            </div>
+            <h2 className="font-semibold text-slate-800">AI-Recommended Scholarships</h2>
+            <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-semibold">Premium</span>
+          </div>
+
+          {scholarshipRecsLoading && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <SkeletonCard /><SkeletonCard /><SkeletonCard />
+            </div>
+          )}
+
+          {scholarshipRecsError && (
+            <div className="rounded-2xl bg-rose-50 border border-rose-100 px-5 py-4 text-sm text-rose-500">
+              Couldn't load scholarship recommendations. Please refresh the page.
+            </div>
+          )}
+
+          {scholarshipRecs && scholarshipRecs.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {scholarshipRecs.map((rec) => (
+                <ScholarshipRecommendationCard key={rec.id} rec={rec} />
+              ))}
+            </div>
+          )}
+
+          {scholarshipRecs && scholarshipRecs.length === 0 && (
+            <div className="rounded-2xl bg-slate-50 border border-slate-100 px-5 py-6 text-sm text-slate-500 text-center">
+              No scholarship matches yet.{' '}
+              <Link to="/dashboard/account" className="text-amber-600 font-semibold">
+                Complete your profile
+              </Link>{' '}
+              with your field of study, target level, and country of origin to get personalised matches.
+            </div>
+          )}
+        </div>
+      )}
+
+      {!user?.is_premium && (
         /* Premium upgrade banner */
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 p-6 mb-8 text-white">
           <div className="absolute inset-0 opacity-10" style={{

@@ -9,11 +9,9 @@ import {
   ClipboardDocumentListIcon,
   DocumentCheckIcon,
   AcademicCapIcon,
-  StarIcon,
   ArrowRightIcon,
   CheckCircleIcon,
 } from '@heroicons/react/24/outline';
-import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
 
 const FEATURES = [
   {
@@ -43,33 +41,6 @@ const FEATURES = [
     desc: 'Discover full-ride and partial scholarships matched to your field and goals.',
     gradient: 'from-emerald-500 to-teal-400',
     bg: 'bg-emerald-50',
-  },
-];
-
-const TESTIMONIALS = [
-  {
-    quote: 'GradPath helped me find and track three PhD applications - I got into UNSW!',
-    name: 'Priya R.',
-    uni: 'UNSW Sydney',
-    rating: 5,
-    avatar: 'PR',
-    color: 'from-violet-400 to-indigo-500',
-  },
-  {
-    quote: 'The scholarship discovery feature alone is worth it. Saved me hours of research.',
-    name: 'James L.',
-    uni: 'University of Melbourne',
-    rating: 5,
-    avatar: 'JL',
-    color: 'from-emerald-400 to-teal-500',
-  },
-  {
-    quote: 'I had all my documents organised and submitted ahead of every deadline.',
-    name: 'Aisha M.',
-    uni: 'University of Sydney',
-    rating: 5,
-    avatar: 'AM',
-    color: 'from-rose-400 to-pink-500',
   },
 ];
 
@@ -108,7 +79,6 @@ function FadeIn({ children, delay = 0, className = '' }: { children: React.React
 
 export default function LandingPage() {
   const { ref: featRef, inView: featInView } = useInView();
-  const { ref: testRef, inView: testInView } = useInView();
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
@@ -267,49 +237,6 @@ export default function LandingPage() {
                 <h3 className="font-bold text-slate-800 mb-2">{title}</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
               </FadeIn>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Testimonials ── */}
-      <section className="bg-gradient-to-br from-slate-900 to-slate-800 py-24">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <FadeIn className="text-center mb-12">
-            <span className="inline-block px-3 py-1 bg-white/10 text-slate-300 text-xs font-semibold rounded-full mb-3">Testimonials</span>
-            <h2 className="text-3xl sm:text-4xl font-black text-white">Trusted by students across Australia</h2>
-          </FadeIn>
-
-          <div
-            ref={testRef as React.RefObject<HTMLDivElement>}
-            className="grid sm:grid-cols-3 gap-6"
-          >
-            {TESTIMONIALS.map(({ quote, name, uni, rating, avatar, color }, i) => (
-              <div
-                key={name}
-                className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors"
-                style={testInView ? { animation: `fadeInUp 0.6s ease-out ${i * 120}ms both` } : { opacity: 0 }}
-              >
-                {/* Stars */}
-                <div className="flex gap-0.5 mb-4">
-                  {Array.from({ length: rating }).map((_, j) => (
-                    <StarSolid key={j} className="h-4 w-4 text-amber-400" />
-                  ))}
-                  {Array.from({ length: 5 - rating }).map((_, j) => (
-                    <StarIcon key={j} className="h-4 w-4 text-slate-600" />
-                  ))}
-                </div>
-                <p className="text-slate-300 text-sm leading-relaxed mb-5 italic">"{quote}"</p>
-                <div className="flex items-center gap-3">
-                  <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${color} flex items-center justify-center text-xs font-bold text-white flex-shrink-0`}>
-                    {avatar}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-white">{name}</p>
-                    <p className="text-xs text-slate-400">{uni}</p>
-                  </div>
-                </div>
-              </div>
             ))}
           </div>
         </div>

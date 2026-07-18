@@ -22,6 +22,7 @@ export interface ScholarshipParams {
   search?: string;
   type?: string;
   field?: string;
+  university?: number;
   page?: number;
 }
 

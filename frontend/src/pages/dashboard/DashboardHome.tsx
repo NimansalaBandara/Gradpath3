@@ -16,13 +16,17 @@ import type { AIRecommendation } from '../../types/api';
 
 // ── AI recommendation card ──────────────────────────────────────────────────
 function RecommendationCard({ rec }: { rec: AIRecommendation }) {
+  const navigate = useNavigate();
   const levelLabel = rec.level === 'masters' ? "Master's" : 'PhD';
   const levelColor = rec.level === 'masters'
     ? 'bg-blue-100 text-blue-700'
     : 'bg-violet-100 text-violet-700';
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 hover:shadow-md transition-shadow">
+    <div
+      onClick={() => navigate(`/dashboard/universities/${rec.university_id}/courses/${rec.course_id}`)}
+      className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer"
+    >
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-slate-800 text-sm leading-snug">{rec.title}</p>

@@ -79,6 +79,7 @@ def compute_recommendations(user, courses):
             "course_id": c.id,
             "title": c.title,
             "university": c.university.name,
+            "university_id": c.university.id,
             "level": c.level,
             "match_score": s,
             "match_reason": make_reason(c, s),

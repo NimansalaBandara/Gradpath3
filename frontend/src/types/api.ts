@@ -184,6 +184,7 @@ export interface AIRecommendation {
   course_id: number;
   title: string;
   university: string;
+  university_id: number;
   level: 'masters' | 'phd';
   match_reason: string;
   match_score: number;

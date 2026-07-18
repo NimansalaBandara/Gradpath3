@@ -109,14 +109,15 @@ export default function UniversitiesPage() {
           /* Premium: show suggested university chips */
           <div className="flex flex-wrap gap-2.5">
             {suggestedUnis.map((rec) => (
-              <div
+              <Link
                 key={rec.university}
+                to={`/dashboard/universities/${rec.university_id}`}
                 className="flex items-center gap-2 px-3.5 py-2 bg-amber-50 border border-amber-200 rounded-xl hover:bg-amber-100 transition-colors"
               >
                 <SparklesIcon className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
                 <span className="text-sm font-semibold text-slate-800">{rec.university}</span>
                 <span className="text-xs text-amber-600 font-medium">{rec.match_score}% match</span>
-              </div>
+              </Link>
             ))}
           </div>
         ) : (

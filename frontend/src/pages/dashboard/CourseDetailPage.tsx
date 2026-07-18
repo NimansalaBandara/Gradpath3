@@ -84,7 +84,10 @@ export default function CourseDetailPage() {
     : 'Fee waived';
   const deadlineLabel = course.deadline
     ? new Date(course.deadline).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
-    : 'Check university website';
+    : null;
+  const daysLeft = course.deadline
+    ? Math.ceil((new Date(course.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : null;
   const requirementBullets = course.requirements ? splitRequirements(course.requirements) : [];
   const similarCourses = (similarData?.results ?? []).filter(c => c.id !== course.id).slice(0, 3);
   const scholarships = (scholarshipsData?.results ?? []).slice(0, 3);
@@ -93,7 +96,6 @@ export default function CourseDetailPage() {
     { icon: AcademicCapIcon, label: 'Level', value: isPhd ? 'PhD' : "Master's" },
     { icon: ClockIcon, label: 'Duration', value: course.duration || '—' },
     { icon: CurrencyDollarIcon, label: 'Tuition Fee', value: fee },
-    { icon: CalendarDaysIcon, label: 'Application Deadline', value: deadlineLabel },
     { icon: MapPinIcon, label: 'Location', value: [course.university?.city, course.university?.country].filter(Boolean).join(', ') || '—' },
     { icon: TrophyIcon, label: 'University Ranking', value: course.university?.world_ranking ? `#${course.university.world_ranking} World` : 'Not ranked' },
   ];
@@ -194,6 +196,40 @@ export default function CourseDetailPage() {
 
         {/* Sticky sidebar */}
         <div className="lg:sticky lg:top-6 space-y-4">
+          {/* Deadline — highlighted */}
+          <div className={`rounded-2xl border p-5 ${
+            daysLeft === null
+              ? 'bg-slate-50 border-slate-100'
+              : daysLeft < 0
+                ? 'bg-slate-50 border-slate-100'
+                : daysLeft <= 30
+                  ? 'bg-rose-50 border-rose-200'
+                  : daysLeft <= 90
+                    ? 'bg-amber-50 border-amber-200'
+                    : 'bg-emerald-50 border-emerald-200'
+          }`}>
+            <div className="flex items-center gap-2 mb-1.5">
+              <CalendarDaysIcon className={`h-4 w-4 ${
+                daysLeft === null || daysLeft < 0
+                  ? 'text-slate-400'
+                  : daysLeft <= 30
+                    ? 'text-rose-500'
+                    : daysLeft <= 90
+                      ? 'text-amber-500'
+                      : 'text-emerald-500'
+              }`} />
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Application Deadline</span>
+            </div>
+            <p className="text-lg font-bold text-brand-text mb-1">{deadlineLabel ?? 'Check university website'}</p>
+            {daysLeft !== null && (
+              <p className={`text-xs font-semibold ${
+                daysLeft < 0 ? 'text-slate-400' : daysLeft <= 30 ? 'text-rose-600' : daysLeft <= 90 ? 'text-amber-600' : 'text-emerald-600'
+              }`}>
+                {daysLeft < 0 ? 'Deadline has passed' : daysLeft === 0 ? 'Due today!' : `${daysLeft} day${daysLeft === 1 ? '' : 's'} left`}
+              </p>
+            )}
+          </div>
+
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <h3 className="text-sm font-semibold text-brand-text mb-4">Key facts</h3>
             <div className="space-y-4">

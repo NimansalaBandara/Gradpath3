@@ -17,7 +17,9 @@ class ApplicationTrackerViewSet(viewsets.ModelViewSet):
         )
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        course = serializer.validated_data.get('course')
+        deadline = serializer.validated_data.get('deadline') or (course.deadline if course else None)
+        serializer.save(user=self.request.user, deadline=deadline)
 
 
 class DocumentItemViewSet(viewsets.ModelViewSet):

@@ -1,14 +1,19 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowUpTrayIcon,
   TrashIcon,
   CheckCircleIcon,
   DocumentTextIcon,
+  LockClosedIcon,
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
-import { documentsApi } from '../../lib/api';
+import { documentsApi, getErrorDetail } from '../../lib/api';
+import { useAuth } from '../../context/AuthContext';
 import type { DocType, DocumentItem } from '../../types/api';
+
+const FREE_DOCUMENT_LIMIT = 5;
 
 const DOC_TYPES: { type: DocType; label: string; description: string; color: string; iconBg: string }[] = [
   { type: 'sop', label: 'Statement of Purpose', description: 'Personal statement explaining your goals', color: 'from-violet-500 to-indigo-400', iconBg: 'bg-violet-100 text-violet-600' },
@@ -26,6 +31,7 @@ function DocTypeCard({
   color,
   iconBg,
   items,
+  atLimit,
 }: {
   docType: DocType;
   label: string;
@@ -33,9 +39,11 @@ function DocTypeCard({
   color: string;
   iconBg: string;
   items: DocumentItem[];
+  atLimit: boolean;
 }) {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const uploadMutation = useMutation({
     mutationFn: (file: File) => {
@@ -44,7 +52,11 @@ function DocTypeCard({
       fd.append('file', file);
       return documentsApi.upload(fd);
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['documents'] }),
+    onSuccess: () => {
+      setUploadError(null);
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+    },
+    onError: (error) => setUploadError(getErrorDetail(error, 'Could not upload this file. Please try again.')),
   });
 
   const toggleMutation = useMutation({
@@ -131,6 +143,10 @@ function DocTypeCard({
         </ul>
       )}
 
+      {uploadError && (
+        <p className="text-xs text-red-600 mb-2">{uploadError}</p>
+      )}
+
       <div className="flex gap-2">
         <input
           ref={fileInputRef}
@@ -144,18 +160,28 @@ function DocTypeCard({
             }
           }}
         />
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploadMutation.isPending}
-          className="flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-800 border border-slate-200 hover:border-primary/40 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
-        >
-          {uploadMutation.isPending ? (
-            <div className="animate-spin rounded-full h-3 w-3 border-b border-primary" />
-          ) : (
-            <ArrowUpTrayIcon className="h-3.5 w-3.5" />
-          )}
-          Upload file
-        </button>
+        {atLimit ? (
+          <Link
+            to="/dashboard/upgrade"
+            className="flex items-center gap-1.5 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            <LockClosedIcon className="h-3.5 w-3.5" />
+            Upgrade to upload more
+          </Link>
+        ) : (
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploadMutation.isPending}
+            className="flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-800 border border-slate-200 hover:border-primary/40 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+          >
+            {uploadMutation.isPending ? (
+              <div className="animate-spin rounded-full h-3 w-3 border-b border-primary" />
+            ) : (
+              <ArrowUpTrayIcon className="h-3.5 w-3.5" />
+            )}
+            Upload file
+          </button>
+        )}
       </div>
       </div>
     </div>
@@ -163,6 +189,7 @@ function DocTypeCard({
 }
 
 export default function DocumentChecklistPage() {
+  const { user } = useAuth();
   const { data: items, isLoading } = useQuery({
     queryKey: ['documents'],
     queryFn: documentsApi.list,
@@ -173,10 +200,27 @@ export default function DocumentChecklistPage() {
     return typeItems.length > 0;
   }).length;
 
+  const totalDocs = items?.length ?? 0;
+  const atLimit = !user?.is_premium && totalDocs >= FREE_DOCUMENT_LIMIT;
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-slate-800 mb-1">Document Checklist</h1>
       <p className="text-slate-500 mb-2">Upload and track all documents required for your applications.</p>
+
+      {!isLoading && !user?.is_premium && (
+        <div className="flex items-center gap-2 mb-3">
+          <div className="h-2 flex-1 max-w-[220px] bg-slate-100 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-amber-400 to-yellow-300 rounded-full transition-all duration-700"
+              style={{ width: `${Math.min(totalDocs / FREE_DOCUMENT_LIMIT, 1) * 100}%` }}
+            />
+          </div>
+          <span className="text-xs font-medium text-gray-500 whitespace-nowrap">
+            {totalDocs} / {FREE_DOCUMENT_LIMIT} documents uploaded · Free plan
+          </span>
+        </div>
+      )}
 
       {!isLoading && (
         <div className="flex items-center gap-2 mb-6">
@@ -209,6 +253,7 @@ export default function DocumentChecklistPage() {
               color={dt.color}
               iconBg={dt.iconBg}
               items={items?.filter((i) => i.doc_type === dt.type) ?? []}
+              atLimit={atLimit}
             />
           ))}
         </div>

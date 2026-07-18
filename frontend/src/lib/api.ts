@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import type { User, RegisterResponse, LoginResponse, StudentProfile, ApplicationTracker, TrackerStatus, DocumentItem, SubscriptionStatus, AIRecommendation, AIScholarshipRecommendation } from '../types/api';
+import type { User, RegisterResponse, LoginResponse, StudentProfile, ApplicationTracker, TrackerStatus, DocumentItem, SubscriptionStatus, AIRecommendation, AIScholarshipRecommendation, ApiError } from '../types/api';
 
 const api = axios.create({
   baseURL: '/api',
@@ -39,6 +39,14 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+export function getErrorDetail(error: unknown, fallback: string): string {
+  if (axios.isAxiosError(error)) {
+    const detail = (error.response?.data as ApiError | undefined)?.detail;
+    if (typeof detail === 'string') return detail;
+  }
+  return fallback;
+}
 
 export const authApi = {
   register: (data: { email: string; password: string; first_name: string; last_name: string }) =>

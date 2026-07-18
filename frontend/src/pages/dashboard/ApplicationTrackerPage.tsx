@@ -1,9 +1,13 @@
 import { useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { PlusIcon, TrashIcon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { trackerApi } from '../../lib/api';
+import { PlusIcon, TrashIcon, XMarkIcon, MagnifyingGlassIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import { trackerApi, getErrorDetail } from '../../lib/api';
 import { catalogApi } from '../../lib/catalogApi';
+import { useAuth } from '../../context/AuthContext';
 import type { ApplicationTracker, TrackerStatus } from '../../types/api';
+
+const FREE_TRACKER_LIMIT = 5;
 
 const STATUS_OPTIONS: { value: TrackerStatus; label: string; color: string }[] = [
   { value: 'hope_to_apply', label: 'Hope to Apply', color: 'bg-slate-100 text-slate-600' },
@@ -196,17 +200,25 @@ function TrackerRow({ entry }: { entry: ApplicationTracker }) {
 
 export default function ApplicationTrackerPage() {
   const [showModal, setShowModal] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const { data: entries, isLoading } = useQuery({
     queryKey: ['tracker'],
     queryFn: trackerApi.list,
   });
 
+  const atLimit = !user?.is_premium && (entries?.length ?? 0) >= FREE_TRACKER_LIMIT;
+
   const addMutation = useMutation({
     mutationFn: ({ courseId, deadline }: { courseId: number; deadline: string | null }) =>
       trackerApi.add({ course_id: courseId, deadline: deadline ?? undefined }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tracker'] }),
+    onSuccess: () => {
+      setAddError(null);
+      queryClient.invalidateQueries({ queryKey: ['tracker'] });
+    },
+    onError: (error) => setAddError(getErrorDetail(error, 'Could not add this course. Please try again.')),
   });
 
   return (
@@ -216,14 +228,46 @@ export default function ApplicationTrackerPage() {
           <h1 className="text-2xl font-bold text-slate-800">Application Tracker</h1>
           <p className="text-slate-500 mt-1">Keep track of your postgraduate applications and their progress.</p>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-yellow-300 hover:from-amber-500 hover:to-yellow-400 text-slate-900 text-sm font-semibold px-4 py-2.5 rounded-xl transition-all shadow-sm shadow-amber-200"
-        >
-          <PlusIcon className="h-4 w-4" />
-          Track a Course
-        </button>
+        {atLimit ? (
+          <Link
+            to="/dashboard/upgrade"
+            className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-yellow-300 hover:from-amber-500 hover:to-yellow-400 text-slate-900 text-sm font-semibold px-4 py-2.5 rounded-xl transition-all shadow-sm shadow-amber-200"
+          >
+            <LockClosedIcon className="h-4 w-4" />
+            Upgrade to track more
+          </Link>
+        ) : (
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-yellow-300 hover:from-amber-500 hover:to-yellow-400 text-slate-900 text-sm font-semibold px-4 py-2.5 rounded-xl transition-all shadow-sm shadow-amber-200"
+          >
+            <PlusIcon className="h-4 w-4" />
+            Track a Course
+          </button>
+        )}
       </div>
+
+      {addError && (
+        <div className="mt-4 flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
+          <span className="flex-shrink-0 text-base leading-none mt-0.5">⚠</span>
+          {addError}
+        </div>
+      )}
+
+      {!user?.is_premium && !isLoading && (
+        <div className="flex items-center gap-2 mt-4 mb-2">
+          <div className="h-2 flex-1 max-w-[220px] bg-slate-100 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-amber-400 to-yellow-300 rounded-full transition-all duration-700"
+              style={{ width: `${Math.min((entries?.length ?? 0) / FREE_TRACKER_LIMIT, 1) * 100}%` }}
+            />
+          </div>
+          <span className="text-xs font-medium text-gray-500 whitespace-nowrap">
+            {entries?.length ?? 0} / {FREE_TRACKER_LIMIT} courses tracked · Free plan
+          </span>
+        </div>
+      )}
+
       <div className="mb-6" />
 
       {isLoading && (

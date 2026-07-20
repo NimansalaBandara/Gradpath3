@@ -21,16 +21,23 @@ const BENEFITS = [
 export default function RegisterPage() {
   const navigate = useNavigate();
   const { register } = useAuth();
-  const [form, setForm] = useState({ email: '', password: '', first_name: '', last_name: '' });
+  const [form, setForm] = useState({ email: '', password: '', confirmPassword: '', first_name: '', last_name: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (form.password !== form.confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
     setLoading(true);
     try {
-      await register(form);
+      const { confirmPassword: _confirmPassword, ...data } = form;
+      await register(data);
       navigate('/dashboard');
     } catch {
       setError('Registration failed. This email may already be registered.');
@@ -199,6 +206,26 @@ export default function RegisterPage() {
                   onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
                   className={inputClass}
                   placeholder="Min. 8 characters"
+                />
+              </div>
+            </div>
+
+            {/* Confirm Password */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <LockClosedIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                <input
+                  type="password"
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                  value={form.confirmPassword}
+                  onChange={(e) => setForm((f) => ({ ...f, confirmPassword: e.target.value }))}
+                  className={inputClass}
+                  placeholder="Re-enter your password"
                 />
               </div>
             </div>

@@ -13,16 +13,3 @@ class AIRecommendation(models.Model):
 
     def __str__(self):
         return f"Recommendations for {self.user.email}"
-
-
-class AIScholarshipRecommendation(models.Model):
-    user = models.OneToOneField(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='ai_scholarship_recommendation',
-    )
-    result_json = models.JSONField()
-    created_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"Scholarship recommendations for {self.user.email}"

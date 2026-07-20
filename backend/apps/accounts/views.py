@@ -7,7 +7,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.catalog.models import University, Course, Scholarship
 from apps.applications.models import ApplicationTracker
-from apps.recommendations.models import AIRecommendation, AIScholarshipRecommendation
+from apps.recommendations.models import AIRecommendation
 from .permissions import IsAdminRole
 from .serializers import RegisterSerializer, UserSerializer, ProfileUpdateSerializer, AdminUserSerializer
 from .models import StudentProfile
@@ -66,7 +66,6 @@ class ProfileUpdateView(APIView):
             # Profile changed — drop any cached AI recommendations so they're recomputed
             # against the updated profile instead of serving a stale match.
             AIRecommendation.objects.filter(user=user).delete()
-            AIScholarshipRecommendation.objects.filter(user=user).delete()
 
         return Response(UserSerializer(user).data)
 

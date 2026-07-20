@@ -1,7 +1,6 @@
 from django.urls import path
-from .views import RecommendationsView, ScholarshipRecommendationsView
+from .views import RecommendationsView
 
 urlpatterns = [
     path('', RecommendationsView.as_view(), name='recommendations'),
-    path('scholarships/', ScholarshipRecommendationsView.as_view(), name='scholarship-recommendations'),
 ]

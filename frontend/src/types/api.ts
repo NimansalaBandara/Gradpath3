@@ -189,8 +189,3 @@ export interface AIRecommendation {
   match_reason: string;
   match_score: number;
 }
-
-export interface AIScholarshipRecommendation extends Scholarship {
-  match_score: number;
-  match_reason: string;
-}
